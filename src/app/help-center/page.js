@@ -1,8 +1,8 @@
 import HelpCenterPageView from '@/components/HelpCenterPageView';
 
 export const metadata = {
-  title: 'مركز المساعدة | دريبدو',
-  description: 'ابحث في مركز المساعدة عن إجابات واضحة حول التسجيل، النشر، الدردشة، الخصوصية، الأقسام الإضافية، والمشاكل التقنية في دريبدو.',
+  title: 'مركز المساعدة | أرزابريس',
+  description: 'ابحث في مركز مساعدة أرزابريس عن إجابات حول الحسابات، النشر، التصنيفات، المساهمين، والدعم الفني.',
   alternates: { canonical: '/help-center' },
 };
 
