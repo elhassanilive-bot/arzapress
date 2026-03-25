@@ -1,603 +1,924 @@
+import Link from "next/link";
+import BlogImage from "@/components/blog/BlogImage";
+import ContributorsSpotlight from "@/components/blog/ContributorsSpotlight";
+import NewsTickerClient from "@/components/blog/NewsTickerClient";
+import HomeTabsPanel from "@/components/blog/HomeTabsPanel";
+import PostCardBookmarkButton from "@/components/blog/PostCardBookmarkButton";
+import { isBlogEnabled, listContributorsPublic, listPostCategories, listPostsDetailed } from "@/lib/blog/posts";
+import { estimateReadingTime, formatArabicDate } from "@/lib/blog/render";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export const metadata = {
-  title: 'دريبدو - Dribdo منصة تواصل اجتماعي عربية',
-  description: 'اكتشف دريبدو بتصميم مختلف يركّز على الوضوح، المجتمع، وسرعة الوصول إلى المحتوى.',
-  alternates: { canonical: '/' },
+  title: "أرزابريس",
+  description: "الصفحة الرئيسية لأرزابريس تعرض أحدث المقالات والتصنيفات بصيغة إخبارية احترافية.",
+  alternates: { canonical: "/" },
 };
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { homeContent } from '@/content/home';
-
-const heroScreenshots = homeContent.heroScreenshots;
-const galleryScreenshots = homeContent.galleryScreenshots;
-
-const signalCards = [
-  {
-    eyebrow: 'التواصل',
-    title: '    تواصل ودردش وانشر بحريتك',
-    text: '    أنشر منشورات صورية ونصية وفيديو والمستنذات, ودردش مع زملائك وأقربائك ومع من تحب.',
-  },
-  {
-    eyebrow: 'الخدمات',
-    title: ' نوفر لك ميزات متنوعة للبيع والشراء وتقديم الخدمات  ',
-    text: 'ابدأ البيع والشراء في منتجاتك وعقاراتك وتقديم الخدمات والبحث عن عمل أو تقديم انجازاتك وخبراتك في أهم أبرز الميزات لدينا من أجلك..',
-  },
-  {
-    eyebrow: 'الأدوات',
-    title: 'لدينا العديد من الأدوات اللتي ستنال اعجابك   ',
-    text: 'أدواتنا جاهزة لكم, اكتشف وشاهد  التلفاز أو جرب أهم الأدوات الأخرى اللتي تحتاجها..',
-  },
+const POSTS_PER_PAGE = 15;
+const SUBCATEGORY_SECTION_COUNT = 4;
+const SUBCATEGORY_POST_FETCH_LIMIT = 80;
+const SUBCATEGORY_SIDE_POST_COUNT = 5;
+const PRIORITY_CATEGORIES = [
+  "التكنولوجيا",
+  "التاريخ",
+  "الاستثمار",
+  "الرياضة",
+  "السفر",
+  "السياسة",
+  "الفنون",
+  "الحيوانات",
+  "البيئة",
+  "تطوير الذات",
+  "اقتصاد",
+  "الصحة النفسية",
+  "المرأة",
 ];
+const CATEGORY_CHILDREN = {
+  المرأة: ["حقوق المرأة", "اهتمامات المرأة", "إعدادات المرأة", "صحة الأم"],
+  الصحة: ["الصحة النفسية", "النوم والراحة", "الوجبات والتغذية"],
+  الرياضة: ["الرياضة البدنية", "اليوجا"],
+  الطبخ: ["الوجبات والتغذية"],
+};
 
-const productUseCases = [
-  {
-    title: 'لصنّاع المحتوى',
-    desc: 'أنشر وتفاعل واستمتع بلحظتك كصانع محتوى عبر, وأظهر تواجدك في التطبيق.',
-  },
-  {
-    title: 'للعلامات التجارية',
-    desc: 'أنشئ مساحتك الخاصة وأظهر تواجدك بعلامتك التجارية في التطبيق. وفرنا لك امكانية انشاء مساحة لعلامتك التجارية لتبدع كيفما تشاء.',
-  },
-  {
-    title: 'للمجتمعات',
-    desc: 'أنشئ مجتمعك أو انضم الى المجتمعات اللذين يتيرون اهتمامك, تفاعل, شارك, أنشر, علق, عبر, وأظهر تواجدك.',
-  },
-  {
-    title: 'للاستخدام اليومي',
-    desc: 'أنشر القصص ودردش مع من تحب, شاهد قنواتك المفضلة في التلفاز, وتألق أكثر مع دريبدو.',
-  },
-];
+function hasRealCoverImage(post) {
+  return Boolean(String(post?.coverImageUrl || "").trim());
+}
 
-const quickStats = [
-  {
-    value: '01',
-    title: 'اليوم الأول ',
-    text: 'التخطيط لما سيحدث. نعلم أن الجميع يحتاجون الى امبراطورية تجمع الكل في واحد, وكم هو مؤسف أن يكون في هاتفك عدة تطبيقات  وبعضها لا تسير كما ترغب. لهذا وفرنا لك دريبدو اللدي يحتوي على تطبيقات كثيرة في تطبيق واحد.',
-  },
-  {
-    value: '24/7',
-    title: 'من 24 ساعة الى أول أسبوع',
-    text: 'من 24 ساعة الى الأسبوع الأول استطعنا بناء واجهة وهيكل التطبيق ولا يزال التخطيط مستمر لما سوف يحدث في التطبيق. ',
-  },
-  {
-    value: '1 شهر',
-    title: 'من الشهر الأول',
-    text: 'في أول شهر استطعنا بناء التطبيق تقريبا وفرنا فيه تجربة سلسة للنشر والتفاعل والمراسلة وكان لا يزال في وضع الاختبارات.',
-  },
-  {
-    value: '5 شهور وأكثر',
-    title: 'منذ أكثر من 5 شهور',
-    text: 'بعد مرور 5 شهور أصبح التطبيق يظهر بهيئته المتكاملة. الأقسام موزعة بانتضام ولاكن على الرغم من ذالك لا تزال فيه العديد من الأخطاء وجارية في اصلاحها  يوما بعد يوم.',
-  },
-];
+function normalizePage(value) {
+  const page = Number.parseInt(String(value || "1"), 10);
+  return Number.isFinite(page) && page > 0 ? page : 1;
+}
 
-const sectionPillars = [
-  {
-    title: 'النشر والتفاعل',
-    desc: 'شارك وانشر وتفاعل, أنشر منشورات نصية صورية فيديو مستنداث منشورات صوتية أو حتى البث المباشر, حريتك مع دريبدو لا تنتهي.',
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 19h16M6 16V8m6 8V5m6 11v-6" />
-      </svg>
-    ),
-  },
-  {
-    title: 'دردش بحرية',
-    desc: 'الآن في الدردشة, يمكنك التواصل مع عائلتك زملائك أصدقائك ومع من تحب, رسائلك مشفرة بخصوصية محترمة, لا قيود ولا حظر ولا بيع البيانات, نحن هنا لنرضيك بما يسعدك.',
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 6h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-4 3V8a2 2 0 0 1 2-2Z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 11h8M8 14h5" />
-      </svg>
-    ),
-  },
-  {
-    title: 'ابنِ مجتمعك',
-    desc: 'أنشئ مساحتك الخاصة لعلامتك التجارية, لابراز تواجدك في دريبدو. أو يمكنك انشاء مجموعتك وتشجيع الأشخاص للانضمام من أجل النشر والتفاعل وتبادل الآراء والنقاشات.',
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.5 19a4.5 4.5 0 0 1 9 0M13 19a3.5 3.5 0 0 1 7 0" />
-      </svg>
-    ),
-  },
-];
+function buildPageHref({ page, category }) {
+  const params = new URLSearchParams();
 
-const executiveSignals = [
-  {
-    value: 'بدون قيود وحرية ثامة',
-    label: 'أنشر وتفاعل وعبر عن رأيك أكثر في دريبدو بحريتك بدون قيود ولا حظر للمحتوى ولا خوارزميات مزعجة ولا بيع للبيانات.',
-  },
-  {
-    value: 'خدمات متعددة',
-    label: 'وفرنا في دريبدو العديد من الخدمات مثل التجارة للبيع والشراء , بيع العقارات, البحث عن الزواج, تقديم الزكاة, المذكرات, وغيرها من الخدمات.',
-  },
-  {
-    value: 'هوية مستقلة',
-    label: 'واجهة حديثة تناسب احتياجات المستخدمين وتنضيم سلس موزع بالتساوي في التطبيق دون تشتت وانزعاج.',
-  },
-];
+  if (page > 1) {
+    params.set("page", String(page));
+  }
 
-const comparisonRows = [
-  {
-    feature: 'من يستطيع رؤية ما تنشره؟',
-    dribdo: 'المتابعون والمهتمون بالمحتوى وحتى الغير متابعين.',
-    others: 'ربما اذا سمحت خواريزميات التواصل الاجتماعي بعرضه للمستخدمين.',
-  },
-  {
-    feature: 'ترتيب المحتوى',
-    dribdo: 'يظهر مباشرة لمتابعيك والمهتمين والغير متابعين بعد النشر فورا.',
-    others: 'تدفق سريع ومزدحم واقتراحات لمحتوى غير مرغوب فيه بسبب خواريزميات اللتي تقترح لك محتوى مزعج غير طبيعي.',
-  },
-  {
-    feature: 'المساحات والمجتمعات',
-    dribdo: 'مدمجة داخل التطبيق تنضيم احترافي وكذالك منشورات المساحات ومنشورات المجتمعات يتم عرضها لك في الرئيسية بدون الحاجة للدخول الى أقسام المساحات والمجتمعات.',
-    others: 'غالبًا تكون موزعة أو ثانوية داخل المنتج.',
-  },
-  {
-    feature: 'الدردشة والمراسلة',
-    dribdo: 'مدمجة داخل التطبيق اشعارات فورية بمجرد تلقي الرسالة سوف يتم اشعارك بشارة التنبيه فوق فقاعة الدردشة.',
-    others: 'أحيانًا تتطلب تنقلًا إضافيًا أو تطبيقات موازية.',
-  },
-  {
-    feature: 'الخصوصية والتحكم',
-    dribdo: 'إعدادات أوضح ومسار أبسط لفهم ما يحدث.',
-    others: 'خيارات كثيرة لكن غير مريحة للمستخدم العادي.',
-  },
-  {
-    feature: 'تعدد الأقسام',
-    dribdo: 'في دريبدو موجود قسم العقارات والوظائف والسوق والصدقات والبحث عن الزواج والمذكرات والجداول وغيرها.',
-    others: 'أقسام محدودة وفي بعض التطبيقات أقسام غير مفيدة على الأساس.',
-  },
-  {
-    feature: 'المبدعون والمحتوى',
-    dribdo: 'المساحات مصممة لتخدم الحضور والعلامات التجارية وصناع المحتوى والنشر باحتراف',
-    others: 'مزعج كثيرا ومشتت بسبب كثرة الاعلانات المنبثقة وهدا ليس جيد للمستخدمين أساسا.',
-  },
-  {
-    feature: 'تجربة الاستخدام',
-    dribdo: 'تجربة متوازنة أقرب لمنتج احترافي منظم',
-    others: 'إدمانية أكثر من كونها منظمة أو واضحة',
-  },
-];
+  if (category) {
+    params.set("category", category);
+  }
 
-const customerReasons = [
-  {
-    title: 'وضوح في التجربة',
-    desc: 'المستخدم يصل إلى ما يريده أسرع لأن الصفحة لا تعتمد على التكديس أو التشتيت البصري.',
-  },
-  {
-    title: 'ثقة في الهوية',
-    desc: 'المنتج يبدو مستقلاً واحترافيًا، وهذا مهم لأي منصة تريد بناء اسم قوي وطويل المدى.',
-  },
-  {
-    title: 'مرونة للنمو',
-    desc: 'التصميم يدعم المجتمعات والمساحات والنشر، ما يجعله مناسبًا للتوسع لاحقًا.',
-  },
-  {
-    title: 'النشر بحرية',
-    desc: ' لا خواريزميات مزعجية, لا قيود للمحتوى العربي الهادف, لا حظر للمحتوى.',
-  },
-];
+  const query = params.toString();
+  return query ? `/?${query}` : "/";
+}
 
-const customerQuestions = [
-  {
-    question: 'هل دريبدو مناسب فقط للمحتوى الشخصي؟',
-    answer: 'لا، تم تصميمه ليخدم الاستخدام الشخصي والمجتمعات والعلامات التجارية وصنّاع المحتوى في نفس الوقت.',
-  },
-  {
-    question: 'ما الذي يجعل الواجهة مختلفة عن المنصات المعتادة؟',
-    answer: 'التركيز هنا على الوضوح، ترتيب المسارات، وتقليل الازدحام البصري حتى تبقى التجربة أخف وأكثر احترافية.',
-  },
-  {
-    question: 'هل يمكن أن تتوسع المنصة لاحقًا بدون إعادة بناء كاملة؟',
-    answer: 'نعم، الهيكل الحالي يمنح مساحة لإضافة أقسام ومزايا جديدة مع الحفاظ على اتساق التجربة.',
-  },
-  {
-    question: 'هل الصفحة الرئيسية جاهزة لتقديم المنتج بشكل تجاري؟',
-    answer: 'نعم، لأنها تجمع بين التعريف بالمنتج، المقارنة، استخدامات المنصة، وعناصر الثقة في مكان واحد.',
-  },
-];
+function getPaginationRange(currentPage, totalPages) {
+  if (totalPages <= 1) return [1];
 
-const quickStatsCompact = [
-  {
-    value: '01',
-    title: 'الفكرة',
-    text: 'منصة واحدة تجمع النشر والتواصل والخدمات بدل التنقل بين تطبيقات كثيرة.',
-  },
-  {
-    value: '24/7',
-    title: 'التطوير',
-    text: 'بناء متواصل يركز على الوضوح وسرعة الوصول واستقرار الواجهة.',
-  },
-  {
-    value: 'اليوم',
-    title: 'النتيجة',
-    text: 'تجربة أقرب لمنتج متكامل مع أقسام واضحة وصور أخف ومسار تصفح أبسط.',
-  },
-].slice(0, Math.min(3, quickStats.length));
+  const pages = new Set([1, totalPages, currentPage, currentPage - 1, currentPage + 1]);
 
-const supportShortcuts = [
-  {
-    title: 'الأسئلة الشائعة',
-    desc: 'افتح مركز الإجابات الكامل بدل تحميل الصفحة الرئيسية بمحتوى طويل.',
-    href: '/faq',
-    cta: 'افتح الأسئلة الشائعة',
-  },
-  {
-    title: 'صفحة المميزات',
-    desc: 'استعرض الوظائف والأقسام بالتفصيل في صفحة مستقلة أخف تنظيمًا.',
-    href: '/features',
-    cta: 'استعرض المميزات',
-  },
-  {
-    title: 'صفحة التنزيل',
-    desc: 'انتقل مباشرة إلى قنوات التنزيل الرسمية عندما تكون جاهزًا للتجربة.',
-    href: '/download',
-    cta: 'انتقل إلى التنزيل',
-  },
-].slice(0, Math.min(3, customerQuestions.length));
+  for (let index = currentPage - 2; index <= currentPage + 2; index += 1) {
+    if (index >= 1 && index <= totalPages) {
+      pages.add(index);
+    }
+  }
 
-const downloadOptions = [
-  {
-    label: 'Google Play',
-    helper: 'نسخة Android',
-    href: '/download',
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path strokeLinecap="round" strokeLinejoin="round" d="m7 5 10 7-10 7V5Z" />
-      </svg>
-    ),
-    primary: true,
-  },
-  {
-    label: 'App Store',
-    helper: 'نسخة iPhone',
-    href: '/download',
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M14.5 6.5c.6-.8 1-1.8.9-2.8-.9.1-2 .6-2.6 1.4-.6.7-1 1.7-.9 2.6 1 .1 2-.4 2.6-1.2Z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.7 12.8c0-2 1.7-3 1.7-3-.9-1.4-2.3-1.6-2.8-1.6-1.2-.1-2.3.7-2.9.7-.7 0-1.6-.7-2.7-.7-1.4 0-2.6.8-3.4 2-.9 1.6-.2 4 .7 5.3.5.8 1.1 1.6 1.9 1.6.7 0 1.1-.5 2-.5s1.3.5 2.1.5 1.3-.7 1.9-1.5c.6-.9.8-1.8.8-1.9 0 0-1.3-.5-1.3-2.9Z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'APK',
-    helper: 'تنزيل مباشر',
-    href: '/download',
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v10m0 0 4-4m-4 4-4-4M5 19h14" />
-      </svg>
-    ),
-  },
-];
+  return [...pages].sort((first, second) => first - second);
+}
 
-function ScreenshotCard({ item, compact = false }) {
+function buildSidebarCategoryTree(categories) {
+  const unique = [...new Set(categories.map((category) => String(category || "").trim()).filter(Boolean))];
+  const childSet = new Set(Object.values(CATEGORY_CHILDREN).flat());
+
+  const parentCandidates = [
+    ...PRIORITY_CATEGORIES.filter((category) => unique.includes(category)),
+    ...unique.filter((category) => !PRIORITY_CATEGORIES.includes(category) && !childSet.has(category)),
+  ];
+
+  const groups = parentCandidates.map((category) => ({
+    name: category,
+    children: (CATEGORY_CHILDREN[category] || []).filter((child) => unique.includes(child)),
+  }));
+
+  const groupedChildren = new Set(groups.flatMap((group) => group.children));
+  const remaining = unique.filter((category) => !parentCandidates.includes(category) && !groupedChildren.has(category));
+
+  return {
+    prioritizedGroups: groups.filter((group) => PRIORITY_CATEGORIES.includes(group.name)),
+    remaining,
+  };
+}
+
+function buildSubcategoryShowcase(posts) {
+  const childCategories = new Set(Object.values(CATEGORY_CHILDREN).flat());
+  const grouped = new Map();
+  const groupedAll = new Map();
+  const uniquePosts = [];
+  const seenSlugs = new Set();
+
+  posts.forEach((post) => {
+    const category = String(post.category || "").trim();
+    if (!post?.slug || seenSlugs.has(post.slug)) return;
+    seenSlugs.add(post.slug);
+    uniquePosts.push(post);
+
+    if (category) {
+      if (!groupedAll.has(category)) groupedAll.set(category, []);
+      groupedAll.get(category).push(post);
+    }
+
+    if (!childCategories.has(category)) return;
+    if (!grouped.has(category)) grouped.set(category, []);
+    grouped.get(category).push(post);
+  });
+
+  const primarySections = [...grouped.entries()]
+    .sort((a, b) => {
+      const countDifference = b[1].length - a[1].length;
+      if (countDifference !== 0) return countDifference;
+
+      const aNewest = new Date(a[1][0]?.publishedAt || a[1][0]?.createdAt || 0).getTime();
+      const bNewest = new Date(b[1][0]?.publishedAt || b[1][0]?.createdAt || 0).getTime();
+      return bNewest - aNewest;
+    })
+    .map(([category, items]) => ({
+      title: category,
+      href: buildPageHref({ page: 1, category }),
+      lead: items[0],
+      side: items.slice(1, 1 + SUBCATEGORY_SIDE_POST_COUNT),
+      isChildCategory: true,
+    }))
+    .filter((section) => section.lead);
+
+  const usedTitles = new Set(primarySections.map((section) => section.title));
+  const fallbackSections = [...groupedAll.entries()]
+    .filter(([category, items]) => !usedTitles.has(category) && items[0])
+    .sort((a, b) => {
+      const countDifference = b[1].length - a[1].length;
+      if (countDifference !== 0) return countDifference;
+
+      const aNewest = new Date(a[1][0]?.publishedAt || a[1][0]?.createdAt || 0).getTime();
+      const bNewest = new Date(b[1][0]?.publishedAt || b[1][0]?.createdAt || 0).getTime();
+      return bNewest - aNewest;
+    })
+    .map(([category, items]) => ({
+      title: category,
+      href: buildPageHref({ page: 1, category }),
+      lead: items[0],
+      side: items.slice(1, 1 + SUBCATEGORY_SIDE_POST_COUNT),
+      isChildCategory: false,
+    }));
+
+  return [...primarySections, ...fallbackSections]
+    .slice(0, SUBCATEGORY_SECTION_COUNT)
+    .map((section) => {
+      const used = new Set([section.lead.slug, ...section.side.map((item) => item.slug)]);
+      const filler = uniquePosts
+        .filter((post) => !used.has(post.slug))
+        .slice(0, Math.max(0, SUBCATEGORY_SIDE_POST_COUNT - section.side.length));
+
+      return {
+        ...section,
+        side: [...section.side, ...filler].slice(0, SUBCATEGORY_SIDE_POST_COUNT),
+      };
+    })
+    .filter((section) => section.lead);
+}
+
+function EmptyState({ title, description, href, label }) {
+  const shouldRenderAction = href && label && label !== "إضافة أول مقال";
+
   return (
-    <article className={`overflow-hidden rounded-[28px] border border-black/10 bg-white shadow-sm ${compact ? '' : 'h-full'}`}>
-      <div className="relative bg-[#f6f6f6] p-3">
-        <Image
-          src={item.src}
-          alt={`لقطة شاشة: ${item.title}`}
-          width={420}
-          height={840}
-          sizes={compact ? '(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw' : '(max-width: 1024px) 100vw, 50vw'}
-          quality={72}
-          className="h-auto w-full rounded-[22px]"
-          priority={item.priority ?? false}
-        />
+    <div className="rounded-[1.6rem] border border-slate-200 bg-white px-6 py-12 text-center shadow-[0_24px_60px_-50px_rgba(15,23,42,0.45)]">
+      <h2 className="text-2xl font-extrabold text-slate-950">{title}</h2>
+      <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-slate-600">{description}</p>
+      {shouldRenderAction ? (
+        <div className="mt-8">
+          <Link
+            href={href}
+            className="inline-flex items-center justify-center rounded-full bg-[var(--blog-accent)] px-6 py-3 text-sm font-bold text-white transition hover:bg-[var(--blog-accent-strong)]"
+          >
+            {label}
+          </Link>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function LivePostVisual({ post, className = "", priority = false, compact = false, sizes = "100vw" }) {
+  if (hasRealCoverImage(post)) {
+    return (
+      <BlogImage
+        src={post.coverImageUrl}
+        alt={post.title}
+        fill
+        priority={priority}
+        sizes={sizes}
+        className={className}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={[
+        "absolute inset-0 flex h-full w-full flex-col justify-between bg-[linear-gradient(135deg,#7f1d1d_0%,#991b1b_35%,#111827_100%)] text-white",
+        compact ? "p-3" : "p-5 sm:p-7",
+      ].join(" ")}
+    >
+      <div className="flex items-center justify-between text-[10px] font-bold text-white/75">
+        <span className="rounded-full bg-white/12 px-2 py-1">{post.category || "مقال"}</span>
+        <span>{formatArabicDate(post.publishedAt || post.createdAt)}</span>
       </div>
-      <div className="space-y-2 p-5 text-right">
-        <h3 className="text-lg font-bold text-black">{item.title}</h3>
-        <p className="text-sm leading-7 text-black/65">{item.subtitle}</p>
+      <div className="space-y-3 text-right">
+        <div className={`font-black ${compact ? "line-clamp-2 text-sm leading-6" : "line-clamp-3 text-2xl leading-[1.6] sm:text-3xl"}`}>
+          {post.title}
+        </div>
+        <div className={`text-white/80 ${compact ? "line-clamp-2 text-[11px] leading-5" : "line-clamp-3 text-sm leading-7"}`}>
+          {post.excerpt}
+        </div>
       </div>
+      <div className="flex justify-start">
+        <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white/90">
+          محتوى المقال
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function HeroLead({ post }) {
+  const readingTime = estimateReadingTime(post.content);
+
+  return (
+    <article className="overflow-hidden bg-[#1f1f1f]">
+      <Link href={`/blog/${post.slug}`} className="grid h-full gap-0 lg:grid-cols-[0.52fr_0.48fr]">
+        <div className="flex flex-col justify-between border-l border-white/10 p-5 text-white sm:p-6">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold text-white/70">
+              <span className="inline-flex items-center bg-red-700 px-2 py-1 text-white">{post.category || "عام"}</span>
+              <span>{formatArabicDate(post.publishedAt || post.createdAt)}</span>
+              <span>{readingTime} دقائق</span>
+            </div>
+            <h1 className="mt-4 line-clamp-3 text-2xl font-black leading-[1.65] text-white sm:text-3xl lg:text-[2.15rem]">
+              {post.title}
+            </h1>
+            <p className="mt-4 line-clamp-3 text-sm leading-8 text-white/78">{post.excerpt}</p>
+          </div>
+        </div>
+
+        <div className="relative min-h-[280px] bg-slate-800 sm:min-h-[360px] lg:min-h-[460px]">
+          <LivePostVisual
+            post={post}
+            priority
+            sizes="(max-width: 1024px) 100vw, 52vw"
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+        </div>
+      </Link>
     </article>
   );
 }
 
-export default function Home() {
+function SideHeadline({ post }) {
   return (
-    <div className="w-full bg-[#fbf7f4]">
-      <section className="relative overflow-hidden border-b border-black/8">
-        <div className="absolute inset-x-0 top-0 h-[28rem] bg-[radial-gradient(circle_at_top,#f4b9b9_0,#fbf7f4_58%)]" />
-        <div className="relative mx-auto grid max-w-7xl gap-14 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
-          <div className="space-y-8 text-right">
-            <div className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm font-semibold text-black/70">
-              <span className="text-xs uppercase tracking-[0.45em] text-black/40">Dribdo</span>
-              <span>{homeContent.hero.badgeName}</span>
-            </div>
+    <article className="border-b border-white/10 last:border-b-0">
+      <Link href={`/blog/${post.slug}`} className="grid grid-cols-[1fr_84px] gap-3 p-3 transition hover:bg-white/5">
+        <div className="text-right">
+          <div className="inline-flex bg-red-700 px-2 py-0.5 text-[10px] font-bold text-white">{post.category || "عام"}</div>
+          <h2 className="mt-2 line-clamp-3 text-[13px] font-extrabold leading-6 text-white">{post.title}</h2>
+        </div>
+        <div className="relative h-16 overflow-hidden bg-slate-700">
+          <LivePostVisual post={post} compact sizes="84px" className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-black/15" />
+        </div>
+      </Link>
+    </article>
+  );
+}
 
-            <div className="space-y-5">
-              <h1 className="max-w-3xl text-5xl font-black leading-[1.15] text-black sm:text-6xl">
-                {homeContent.hero.title.prefix}{' '}
-                <span className="text-red-700">{homeContent.hero.title.highlight}</span>{' '}
-                {homeContent.hero.title.suffix}
-              </h1>
-              <p className="max-w-2xl text-lg leading-8 text-black/70">{homeContent.hero.description}</p>
-            </div>
+function EditorialCard({ post, tone = "light" }) {
+  const dark = tone === "dark";
 
-            <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link
-                href="/download"
-                className="inline-flex items-center justify-center rounded-full bg-red-700 px-8 py-3.5 text-base font-semibold text-white transition-colors hover:bg-red-800"
-              >
-                {homeContent.hero.ctaPrimary}
-              </Link>
-              <Link
-                href="/features"
-                className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-8 py-3.5 text-base font-semibold text-black transition hover:bg-black/5"
-              >
-                {homeContent.hero.ctaSecondary}
-              </Link>
-            </div>
+  return (
+    <article
+      className={[
+        "border p-4",
+        dark ? "border-slate-800 bg-slate-950 text-white" : "border-slate-200 bg-white text-slate-950",
+      ].join(" ")}
+    >
+      <Link href={`/blog/${post.slug}`} className="block">
+        <div className={`text-[11px] font-extrabold ${dark ? "text-red-300" : "text-red-700"}`}>{post.category || "ملف"}</div>
+        <h3 className={`mt-2 line-clamp-2 text-lg font-black leading-8 ${dark ? "text-white" : "text-slate-950"}`}>{post.title}</h3>
+        <p className={`mt-3 line-clamp-3 text-sm leading-7 ${dark ? "text-white/75" : "text-slate-600"}`}>{post.excerpt}</p>
+        <div className={`mt-4 text-xs font-bold ${dark ? "text-white/65" : "text-slate-500"}`}>
+          {formatArabicDate(post.publishedAt || post.createdAt)}
+        </div>
+      </Link>
+    </article>
+  );
+}
 
-            <div className="grid gap-4 sm:grid-cols-3">
-              {signalCards.map((card) => (
-                <article key={card.title} className="rounded-[26px] border border-black/10 bg-white/90 p-5 text-right shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-black/35">{card.eyebrow}</p>
-                  <h2 className="mt-3 text-lg font-bold text-black">{card.title}</h2>
-                  <p className="mt-2 text-sm leading-7 text-black/65">{card.text}</p>
-                </article>
-              ))}
-            </div>
+function EditorialPanel({ posts }) {
+  const items = posts.slice(0, 3);
+  if (!items.length) return null;
+
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
+        {items[0] ? <EditorialCard post={items[0]} tone="dark" /> : null}
+        {items.slice(1).map((post) => (
+          <EditorialCard key={`editorial-${post.slug}`} post={post} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CategoryIcon({ category }) {
+  const value = String(category || "");
+  const common = "h-5 w-5";
+
+  if (/صحة الأم/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="8" r="3" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8.5 20c0-3 1.8-5 3.5-5s3.5 2 3.5 5M9.5 13.5c.8 1 1.6 1.5 2.5 1.5s1.7-.5 2.5-1.5" />
+      </svg>
+    );
+  }
+
+  if (/الوجبات|التغذية/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 4v8M6 4v8M6 8h2M14 4v16M18 4c0 3-2 4-2 6v10" />
+      </svg>
+    );
+  }
+
+  if (/الطبخ/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 11h12a2 2 0 0 1 2 2v3H7a2 2 0 0 1-2-2v-3Z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7 11V9a3 3 0 0 1 3-3h2" />
+      </svg>
+    );
+  }
+
+  if (/اليوجا/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="6.5" r="2.5" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 0-4 2m4-2 4 2m-8 3 4-2 4 2" />
+      </svg>
+    );
+  }
+
+  if (/النوم|الراحة/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M18 15a6 6 0 1 1-6-9 5 5 0 0 0 6 9Z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7 5h.01M5 8h.01" />
+      </svg>
+    );
+  }
+
+  if (/حقوق المرأة/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 5 5 8v4c0 4 3 6.5 7 7 4-.5 7-3 7-7V8l-7-3Z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10 12h4M12 10v4" />
+      </svg>
+    );
+  }
+
+  if (/إعدادات المرأة/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="3" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 12h2M3 12h2M12 3v2M12 19v2M17 7l1.5-1.5M5.5 18.5 7 17M17 17l1.5 1.5M5.5 5.5 7 7" />
+      </svg>
+    );
+  }
+
+  if (/الرياضة البدنية/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 9h3v6H6m9-6h3v6h-3M9 12h6" />
+      </svg>
+    );
+  }
+
+  if (/التكنولوجيا|تقنية|الذكاء/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="4" y="5" width="16" height="11" rx="2" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 19h8M10 16v3M14 16v3" />
+      </svg>
+    );
+  }
+
+  if (/التاريخ/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="8" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 2" />
+      </svg>
+    );
+  }
+
+  if (/الاستثمار/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 17l4-4 3 3 7-7" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14 9h5v5" />
+      </svg>
+    );
+  }
+
+  if (/الرياضة/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="7" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l6 6M15 9l-6 6" />
+      </svg>
+    );
+  }
+
+  if (/السفر/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 11h18M6 15l3-8 3 4 3-2 3 6" />
+      </svg>
+    );
+  }
+
+  if (/السياسة/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 20h16M6 17V8l6-3 6 3v9" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 11h.01M15 11h.01" />
+      </svg>
+    );
+  }
+
+  if (/الفنون/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4c4.4 0 8 2.9 8 6.5S16.4 17 12 17h-1a2 2 0 0 0-2 2v1" />
+        <circle cx="8" cy="9" r="1" />
+        <circle cx="12" cy="7.5" r="1" />
+        <circle cx="15.5" cy="10" r="1" />
+      </svg>
+    );
+  }
+
+  if (/الحيوانات/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7 14c0-2 2-4 5-4s5 2 5 4-2 4-5 4-5-2-5-4Z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 9 7 7M12 8V6M16 9l1-2" />
+      </svg>
+    );
+  }
+
+  if (/البيئة/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 20c4-3 6-6.5 6-10a9 9 0 0 0-12 0c0 3.5 2 7 6 10Z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 10c1.5 1 2.5 2.5 3 4" />
+      </svg>
+    );
+  }
+
+  if (/تطوير الذات/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16M5 11l7-7 7 7" />
+      </svg>
+    );
+  }
+
+  if (/اقتصاد|مال|أعمال/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 19V9m7 10V5m7 14v-7" />
+      </svg>
+    );
+  }
+
+  if (/الصحة النفسية/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 20c-4.5-3.2-7-6.1-7-9.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 7 3.5c0 3.4-2.5 6.3-7 9.5Z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 12.5h1.5l1-2 1 4 1-2H16" />
+      </svg>
+    );
+  }
+
+  if (/صحة|طب/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
+      </svg>
+    );
+  }
+
+  if (/المرأة/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="9" r="4" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 13v7M9 17h6" />
+      </svg>
+    );
+  }
+
+  if (/سياسة|عالم|شرق/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="8" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 12h16M12 4a12 12 0 0 1 0 16M12 4a12 12 0 0 0 0 16" />
+      </svg>
+    );
+  }
+
+  if (/مرأة|أسرة|مجتمع/.test(value)) {
+    return (
+      <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 14a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 14v6M9 17h6" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" className={common} fill="none" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 5h12v14H6z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 9h6M9 13h6M9 17h4" />
+    </svg>
+  );
+}
+
+function CategoriesSidebar({ categories, currentCategory }) {
+  if (!categories.length) return null;
+
+  const { prioritizedGroups, remaining } = buildSidebarCategoryTree(categories);
+
+  function CategoryTreeLink({ category, nested = false }) {
+    return (
+      <Link
+        href={buildPageHref({ page: 1, category })}
+        className={[
+          "group flex items-center justify-between gap-3 rounded-xl border px-3 py-3 text-right transition",
+          currentCategory === category
+            ? "border-red-200 bg-red-50/40"
+            : "border-slate-200 bg-white hover:border-red-200 hover:bg-red-50/30",
+          nested ? "py-2.5" : "",
+        ].join(" ")}
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center text-slate-950">
+            <CategoryIcon category={category} />
           </div>
+          <span className={`line-clamp-1 text-slate-900 ${nested ? "text-[13px] font-semibold" : "text-sm font-bold"}`}>{category}</span>
+        </div>
+        <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-500 transition group-hover:text-red-700" fill="none" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 6l-6 6 6 6" />
+        </svg>
+      </Link>
+    );
+  }
 
-          <div className="lg:pr-4">
-            <article className="overflow-hidden rounded-[34px] border border-black/10 bg-white shadow-sm">
-              <div className="relative bg-[#f6f6f6] p-4">
-                <Image
-                  src={heroScreenshots[0].src}
-                  alt={`لقطة شاشة: ${heroScreenshots[0].title}`}
-                  width={1200}
-                  height={820}
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  quality={76}
-                  className="h-[440px] w-full rounded-[26px] object-cover object-top sm:h-[520px] lg:h-[620px]"
-                  priority
-                />
+  return (
+    <aside className="self-start border border-slate-200 bg-white p-4 shadow-[0_20px_55px_-45px_rgba(15,23,42,0.35)] lg:sticky lg:top-24">
+      <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3">
+        <div className="text-right">
+          <div className="text-xs font-extrabold tracking-[0.18em] text-red-700">التصفح</div>
+          <h2 className="mt-1 text-2xl font-black text-slate-950">استعرض التصنيفات</h2>
+        </div>
+        <span className="h-8 w-1 bg-red-700" />
+      </div>
+
+      <div className="space-y-2">
+        <Link
+          href={buildPageHref({ page: 1, category: "" })}
+          className={[
+            "group flex items-center justify-between gap-3 rounded-xl border px-3 py-3 text-right transition",
+            currentCategory
+              ? "border-slate-200 bg-white hover:border-red-200 hover:bg-red-50/30"
+              : "border-red-200 bg-red-50/40",
+          ].join(" ")}
+        >
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center text-slate-950">
+              <CategoryIcon category="عام" />
+            </div>
+            <span className="line-clamp-1 text-sm font-bold text-slate-900">كل التصنيفات</span>
+          </div>
+          <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-500 transition group-hover:text-red-700" fill="none" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 6l-6 6 6 6" />
+          </svg>
+        </Link>
+
+        {prioritizedGroups.map((group) => (
+          <div key={group.name}>
+            <CategoryTreeLink category={group.name} />
+            {group.children.length ? (
+              <div className="relative mt-1 mr-3 border-r border-slate-400 pr-4">
+                {group.children.map((child) => (
+                  <div key={child} className="relative">
+                    <span className="absolute right-[-17px] top-4 h-px w-3 bg-slate-400" />
+                    <CategoryTreeLink category={child} nested />
+                  </div>
+                ))}
               </div>
-              <div className="space-y-2 p-6 text-right">
-                <h2 className="text-2xl font-black text-black">{heroScreenshots[0].title}</h2>
-                <p className="text-base leading-8 text-black/65">{heroScreenshots[0].subtitle}</p>
-              </div>
-            </article>
+            ) : null}
           </div>
-        </div>
-      </section>
+        ))}
 
-      <section className="hidden mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-[34px] border border-black/10 bg-white p-8 text-right">
-            <p className="text-sm font-semibold uppercase tracking-[0.45em] text-black/35">تواصل بلا حدود مع عالم دريبدو </p>
-            <h2 className="mt-4 text-4xl font-black text-black">مصمم بأحدث التقنيات اللتي ستناسب العصر الجديد للجيل الجديد</h2>
-            <p className="mt-4 text-base leading-8 text-black/65">
-              دريبدو يأخدك الى استكشاف عالم مليئ بالاثارة وفرص العمل والتواصل الجماعي, لقد وفرنا فيه كل ما سيحتاجه المستخدم من التواصل وتقديم الخدمات..
-            </p>
-
-            <div className="mt-8 grid gap-4">
-              {productUseCases.map((item) => (
-                <article key={item.title} className="rounded-[24px] bg-[#faf6f3] p-5">
-                  <h3 className="text-lg font-bold text-black">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-7 text-black/60">{item.desc}</p>
-                </article>
+        {remaining.length ? (
+          <details className="group rounded-xl border border-slate-200 bg-white">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-3 text-right">
+              <span className="text-sm font-bold text-slate-900">عرض المزيد</span>
+              <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-500 transition group-open:rotate-90" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 6l-6 6 6 6" />
+              </svg>
+            </summary>
+            <div className="space-y-2 border-t border-slate-200 p-2">
+              {remaining.map((category) => (
+                <CategoryTreeLink key={category} category={category} />
               ))}
             </div>
+          </details>
+        ) : null}
+      </div>
+    </aside>
+  );
+}
+
+function PostGridCard({ post, index }) {
+  const mobileVisibility = index >= 10 ? "hidden lg:block" : "";
+
+  return (
+    <article className={`overflow-hidden border border-slate-200 bg-white shadow-[0_18px_45px_-38px_rgba(15,23,42,0.4)] transition hover:-translate-y-0.5 hover:shadow-[0_28px_60px_-38px_rgba(15,23,42,0.45)] ${mobileVisibility}`}>
+      <Link href={`/blog/${post.slug}`} className="block">
+        <div className="relative h-40 bg-slate-200 sm:h-44 xl:h-48">
+          <LivePostVisual
+            post={post}
+            compact
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="h-full w-full object-cover"
+          />
+          <PostCardBookmarkButton postId={post.id} slug={post.slug} />
+          <div className="absolute left-3 top-3 bg-[#163d7a] px-2 py-1 text-[10px] font-bold text-white">
+            {post.category || "خبر"}
           </div>
+        </div>
+        <div className="p-4 text-right">
+          <h3 className="line-clamp-2 text-[15px] font-black leading-7 text-slate-950">{post.title}</h3>
+          <p className="mt-2 line-clamp-2 text-[12px] leading-6 text-slate-500">{post.excerpt}</p>
+          <div className="mt-3 flex items-center justify-between gap-3 text-[11px] font-bold text-slate-400">
+            <span>{formatArabicDate(post.publishedAt || post.createdAt)}</span>
+            <span>{estimateReadingTime(post.content)} دقائق</span>
+          </div>
+        </div>
+      </Link>
+    </article>
+  );
+}
 
-          <div className="rounded-[34px] bg-[#111111] p-8 text-white">
-            <p className="text-sm font-semibold uppercase tracking-[0.45em] text-white/40"> كيف يجري العمل عند دريبدو</p>
-            <h2 className="mt-4 text-4xl font-black"> انطلاقتنا لم تكن مصادفة لأن كل ما توصلنا به كان بفضل الله سبحانه وتعالى</h2>
-            <p className="mt-4 max-w-3xl text-base leading-8 text-white/70">
-              تعرف كيف يجري العمل وكيف تسير جهودنا مند انطلاق دريبدو من اليوم الأول قبل النشر للعالم. لم يكن الأمر سهلا, سهرنا الليالي, وقاومنا المرض, والأزمات من أجل صنع دريبدو, ليكون كما تراه اليوم..
-            </p>
+function SubcategorySideItem({ post }) {
+  return (
+    <article className="border-b border-slate-200 pb-3 last:border-b-0 last:pb-0">
+      <Link href={`/blog/${post.slug}`} className="grid grid-cols-[74px_1fr] gap-3">
+        <div className="relative h-16 overflow-hidden bg-slate-200">
+          <LivePostVisual post={post} compact sizes="74px" className="h-full w-full object-cover" />
+        </div>
+        <div className="min-w-0 text-right">
+          <h4 className="line-clamp-2 text-[12px] font-bold leading-5 text-slate-900">{post.title}</h4>
+          <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-slate-500">{post.excerpt}</p>
+        </div>
+      </Link>
+    </article>
+  );
+}
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              {quickStatsCompact.map((item) => (
-                <article key={item.title} className="rounded-[26px] border border-white/10 bg-white/5 p-5 text-right">
-                  <p className="text-3xl font-black text-white">{item.value}</p>
-                  <h3 className="mt-3 text-lg font-bold text-white">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-7 text-white/65">{item.text}</p>
-                </article>
-              ))}
+function SubcategoryShowcaseCard({ section }) {
+  return (
+    <section className="border border-slate-200 bg-white p-3 shadow-[0_20px_55px_-45px_rgba(15,23,42,0.35)] sm:p-4">
+      <div className="mb-3 flex items-center justify-between border-b border-slate-200 pb-3">
+        <div className="text-right">
+          <div className="text-[11px] font-extrabold tracking-[0.16em] text-red-700">ملفات فرعية</div>
+          <Link href={section.href} className="mt-1 block text-right text-lg font-black text-slate-950 transition hover:text-red-700">
+            {section.title}
+          </Link>
+        </div>
+        <span className="h-5 w-1 bg-red-700" />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_260px]">
+        <article className="overflow-hidden border border-slate-200 bg-white">
+          <Link href={`/blog/${section.lead.slug}`} className="block">
+            <div className="relative h-60 bg-slate-200 sm:h-64">
+              <LivePostVisual
+                post={section.lead}
+                sizes="(max-width: 1024px) 100vw, 42vw"
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute left-3 top-3 bg-red-700 px-2 py-1 text-[10px] font-bold text-white">{section.title}</div>
             </div>
-          </div>
-        </div>
-      </section>
+            <div className="p-4 text-right">
+              <h3 className="line-clamp-2 text-lg font-black leading-8 text-slate-950">{section.lead.title}</h3>
+              <p className="mt-2 line-clamp-3 text-sm leading-7 text-slate-500">{section.lead.excerpt}</p>
+            </div>
+          </Link>
+        </article>
 
-      <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="mb-10 flex flex-col gap-6 text-right lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl space-y-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.45em] text-black/35">ومدا بعد؟</p>
-            <h2 className="text-4xl font-black text-black sm:text-5xl">لمدا يجب عليك تنزيل دريبدو على جهازك؟</h2>
-          </div>
-          <p className="max-w-2xl text-base leading-8 text-black/65">
-            بعد توضيح الاستخدامات والمؤشرات الأساسية، يأتي هذا القسم ليشرح البنية التي تجعل دريبدو مناسبًا للنشر والتواصل وبناء المجتمع.
-          </p>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          {sectionPillars.map((item) => (
-            <article key={item.title} className="rounded-[30px] border border-black/10 bg-white p-7 text-right shadow-sm">
-              <div className="mb-5 text-black">{item.icon}</div>
-              <h3 className="text-2xl font-bold text-black">{item.title}</h3>
-              <p className="mt-3 text-base leading-8 text-black/65">{item.desc}</p>
-            </article>
+        <div className="space-y-3">
+          {section.side.map((post) => (
+            <SubcategorySideItem key={`${section.title}-${post.slug}`} post={post} />
           ))}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="rounded-[34px] border border-black/10 bg-white p-8 sm:p-10">
-          <div className="mb-10 grid gap-6 border-b border-black/10 pb-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
-            <div className="text-right">
-              <p className="text-sm font-semibold uppercase tracking-[0.45em] text-black/35">مقارنة مباشرة</p>
-              <h2 className="mt-4 text-4xl font-black text-black sm:text-5xl">
-                لماذا  <span className="text-red-700">دريبدو</span>   يختاره المستخدمين أكثر من التطبيقات الأخرى؟
-              </h2>
-              <p className="mt-4 max-w-3xl text-lg leading-8 text-black/65">
-                تعرف لمذا دريبدو يختاره أغلب الأشخاص ويفضلونه أكثر من التطبيقات الأخرى, ليس بهذف النشر والتواصل والدردشة فقط, ولاكن هناك هذف معين يجعله مميز من بين التطبيقات الأخرى.
-              </p>
-            </div>
+function Pagination({ currentPage, totalPages, currentCategory }) {
+  if (totalPages <= 1) return null;
 
-            <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
-              {executiveSignals.map((item) => (
-                <div key={item.value} className="rounded-[24px] bg-[#faf6f3] p-5 text-right">
-                  <p className="text-lg font-bold text-black">{item.value}</p>
-                  <p className="mt-2 text-sm leading-7 text-black/60">{item.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+  const pages = getPaginationRange(currentPage, totalPages);
 
-          <div className="overflow-hidden rounded-[28px] border border-black/10">
-            <div className="grid grid-cols-3 bg-[#f7f3f1] text-right">
-              <div className="border-l border-black/10 p-5 text-lg font-bold text-black">السمات</div>
-              <div className="border-l border-black/10 p-5 text-lg font-bold text-black">
-                <span className="inline-flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-700 text-sm font-bold text-white">D</span>
-                  دريبدو
-                </span>
-              </div>
-              <div className="p-5 text-lg font-bold text-black">المنصات الأخرى</div>
-            </div>
+  return (
+    <nav className="flex flex-wrap items-center justify-center gap-2" aria-label="ترقيم صفحات المقالات">
+      <Link
+        href={buildPageHref({ page: Math.max(1, currentPage - 1), category: currentCategory })}
+        aria-disabled={currentPage === 1}
+        className={[
+          "rounded-sm border px-4 py-2 text-sm font-extrabold transition",
+          currentPage === 1
+            ? "pointer-events-none border-slate-200 bg-slate-100 text-slate-400"
+            : "border-slate-300 bg-white text-slate-800 hover:border-red-700 hover:text-red-700",
+        ].join(" ")}
+      >
+        السابق
+      </Link>
 
-            {comparisonRows.map((row, index) => (
-              <div
-                key={row.feature}
-                className={`grid grid-cols-1 border-t border-black/10 md:grid-cols-3 ${index % 2 === 0 ? 'bg-white' : 'bg-[#fcfaf8]'}`}
-              >
-                <div className="border-l border-black/10 p-5 text-right font-semibold text-black md:text-lg">
-                  {row.feature}
-                </div>
-                <div className="border-l border-black/10 p-5 text-right text-black/80">
-                  <span className="inline-flex items-start gap-3">
-                    <svg viewBox="0 0 24 24" className="mt-1 h-5 w-5 shrink-0 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m5 13 4 4L19 7" />
-                    </svg>
-                    <span className="leading-8">{row.dribdo}</span>
-                  </span>
-                </div>
-                <div className="p-5 text-right text-black/70">
-                  <span className="inline-flex items-start gap-3">
-                    <svg viewBox="0 0 24 24" className="mt-1 h-5 w-5 shrink-0 text-red-500" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6 6 18" />
-                    </svg>
-                    <span className="leading-8">{row.others}</span>
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {pages.map((page, index) => {
+        const previous = pages[index - 1];
+        const showGap = previous && page - previous > 1;
 
-      <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr]">
-          <div className="rounded-[34px] border border-black/10 bg-white p-8 text-right">
-            <p className="text-sm font-semibold uppercase tracking-[0.45em] text-black/35">لماذا يختارنا المستخدمون</p>
-            <h2 className="mt-4 text-4xl font-black text-black">أسباب واضحة تجعل القرار أسهل</h2>
-            <p className="mt-4 text-base leading-8 text-black/65">
-              عندما تكون المنصة مرتبة وواضحة وتخدم أكثر من سيناريو استخدام، يصبح تبنيها أسهل للمستخدمين والفرق والعلامات.
-            </p>
-
-            <div className="mt-8 grid gap-4">
-              {customerReasons.map((item) => (
-                <article key={item.title} className="rounded-[24px] bg-[#faf6f3] p-5">
-                  <h3 className="text-lg font-bold text-black">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-7 text-black/60">{item.desc}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-[34px] border border-black/10 bg-white p-8 text-right">
-            <p className="text-sm font-semibold uppercase tracking-[0.45em] text-black/35">مسارات سريعة</p>
-            <h2 className="mt-4 text-4xl font-black text-black">التفاصيل الكاملة في صفحات أخف</h2>
-            <p className="mt-4 text-base leading-8 text-black/65">
-              نقلنا التفاصيل الطويلة إلى الصفحات المتخصصة حتى تبقى الصفحة الرئيسية أسرع وأوضح، مع الوصول السريع إلى كل ما تحتاجه.
-            </p>
-
-            <div className="mt-8 grid gap-4">
-              {supportShortcuts.map((item) => (
-                <Link key={item.title} href={item.href} className="rounded-[24px] border border-black/10 p-5 transition hover:border-black/20 hover:bg-[#faf8f6]">
-                  <h3 className="text-lg font-bold text-black">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-black/60">{item.desc}</p>
-                  <span className="mt-4 inline-flex rounded-full bg-black px-4 py-2 text-sm font-semibold text-white">
-                    {item.cta}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-y border-black/8 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-          <div className="mb-12 text-right">
-            <p className="text-sm font-semibold uppercase tracking-[0.45em] text-black/35">لقطات من الواجهة</p>
-            <h2 className="mt-4 text-4xl font-black text-black sm:text-5xl">
-              لقطات شاشة من داخل <span className="text-red-700"> دريبدو</span>
-            </h2>
-            <p className="mt-4 max-w-3xl text-lg leading-8 text-black/65">
-              عرضنا هنا أربع لقطات أساسية فقط للحفاظ على الصفحة خفيفة، ويمكنك استعراض الباقي من صفحة المميزات.
-            </p>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {galleryScreenshots.map((item) => (
-              <ScreenshotCard key={item.title} item={item} compact />
-            ))}
-          </div>
-
-          <div className="mt-8 flex justify-center">
-            <Link href="/features" className="rounded-full border border-black/10 bg-[#faf8f6] px-6 py-3 text-sm font-semibold text-black transition hover:bg-white">
-              شاهد بقية المميزات واللقطات
+        return (
+          <span key={page} className="contents">
+            {showGap ? <span className="px-1 text-slate-400">...</span> : null}
+            <Link
+              href={buildPageHref({ page, category: currentCategory })}
+              aria-current={currentPage === page ? "page" : undefined}
+              className={[
+                "flex h-10 min-w-10 items-center justify-center rounded-sm border px-3 text-sm font-extrabold transition",
+                currentPage === page
+                  ? "border-red-700 bg-red-700 text-white"
+                  : "border-slate-300 bg-white text-slate-800 hover:border-red-700 hover:text-red-700",
+              ].join(" ")}
+            >
+              {page}
             </Link>
-          </div>
-        </div>
-      </section>
+          </span>
+        );
+      })}
 
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="rounded-[34px] bg-[#111111] p-8 text-white">
-            <p className="text-sm font-semibold uppercase tracking-[0.4em] text-white/45">جاهز للتجربة</p>
-            <h2 className="mt-4 text-4xl font-black leading-tight">{homeContent.download.heading}</h2>
-            <p className="mt-4 text-base leading-8 text-white/70">{homeContent.download.sub}</p>
+      <Link
+        href={buildPageHref({ page: Math.min(totalPages, currentPage + 1), category: currentCategory })}
+        aria-disabled={currentPage === totalPages}
+        className={[
+          "rounded-sm border px-4 py-2 text-sm font-extrabold transition",
+          currentPage === totalPages
+            ? "pointer-events-none border-slate-200 bg-slate-100 text-slate-400"
+            : "border-slate-300 bg-white text-slate-800 hover:border-red-700 hover:text-red-700",
+        ].join(" ")}
+      >
+        التالي
+      </Link>
+    </nav>
+  );
+}
 
-            <div className="mt-8 grid gap-4">
-              {downloadOptions.map((option) => (
-                <Link
-                  key={option.label}
-                  href={option.href}
-                  className={`flex min-h-[7rem] flex-col items-center justify-center rounded-[24px] border px-8 py-5 text-center transition ${
-                    option.primary
-                      ? 'border-red-700 bg-red-700 text-white hover:bg-red-800'
-                      : 'border-white/10 bg-white text-black hover:bg-white/90'
-                  }`}
-                >
-                  <div className={`mb-3 ${option.primary ? 'text-white' : 'text-black'}`}>{option.icon}</div>
-                  <div className="mx-auto flex max-w-full flex-col items-center justify-center text-center">
-                    <p className={`text-base font-semibold ${option.primary ? 'text-white' : 'text-black'}`}>{option.label}</p>
-                    <p className={`text-sm ${option.primary ? 'text-white/70' : 'text-black/55'}`}>{option.helper}</p>
-                  </div>
-                </Link>
-              ))}
+export default async function HomePage({ searchParams }) {
+  const resolvedSearchParams = await searchParams;
+  const currentPage = normalizePage(resolvedSearchParams?.page);
+  const currentCategory = String(resolvedSearchParams?.category || "").trim();
+  const enabled = isBlogEnabled();
+
+  const [{ posts, error, totalPages }, { categories }, { posts: showcasePosts }, { contributors }] = await Promise.all([
+    listPostsDetailed({ limit: POSTS_PER_PAGE, page: currentPage, category: currentCategory || null }),
+    listPostCategories(),
+    listPostsDetailed({ limit: SUBCATEGORY_POST_FETCH_LIMIT, page: 1 }),
+    listContributorsPublic({ limit: 300 }),
+  ]);
+
+  const [featuredPost, ...headlinePosts] = posts;
+  const editorialPosts = headlinePosts.slice(5, 8);
+  const subcategorySections = buildSubcategoryShowcase(showcasePosts);
+
+  return (
+    <div className="min-h-screen bg-[#f7f5ef] text-slate-950">
+      <section className="bg-[#222] pt-6">
+        <div className="mx-auto max-w-7xl px-4 pb-6 sm:px-6 lg:px-8">
+          {!enabled ? (
+            <EmptyState
+              title="المدونة جاهزة لكن الربط لم يكتمل بعد"
+              description="أضف إعدادات Supabase الخاصة بالمدونة، وبعدها ستظهر المقالات تلقائيًا في الصفحة الرئيسية."
+              href="/admin/blog"
+              label="فتح لوحة النشر"
+            />
+          ) : error ? (
+            <EmptyState
+              title="تعذر تحميل المقالات"
+              description={`حدثت مشكلة أثناء قراءة مقالات المدونة من قاعدة البيانات. الرسالة: ${error}`}
+              href="/admin/blog"
+              label="مراجعة الإعدادات"
+            />
+          ) : posts.length === 0 ? (
+            <EmptyState
+              title="لا توجد مقالات منشورة بعد"
+              description="بمجرد نشر المقالات من لوحة الإدارة ستظهر هنا مباشرة في الصفحة الرئيسية."
+              href="/admin/blog"
+              label="إضافة أول مقال"
+            />
+          ) : (
+            <div className="overflow-hidden border border-white/10">
+              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-white">
+                <h2 className="text-right text-xl font-black">أرزابريس</h2>
+                <div className="mx-4 hidden min-w-0 flex-1 lg:block">
+                  <NewsTickerClient />
+                </div>
+                <span className="h-5 w-1 shrink-0 bg-red-700" />
+              </div>
+              <div className="grid lg:grid-cols-[270px_minmax(0,1fr)]">
+                <aside className="order-2 bg-[#242424] lg:order-1">
+                  {headlinePosts.slice(0, 4).map((post) => (
+                    <SideHeadline key={`side-${post.slug}`} post={post} />
+                  ))}
+                </aside>
+                <div className="order-1 lg:order-2">{featuredPost ? <HeroLead post={featuredPost} /> : null}</div>
+              </div>
             </div>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            {homeContent.why.items.map((item) => (
-              <article key={item.title} className="rounded-[30px] border border-black/10 bg-white p-7 text-right shadow-sm">
-                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-black/30">ميزة</p>
-                <h3 className="mt-4 text-2xl font-bold text-black">{item.title}</h3>
-                <p className="mt-3 text-base leading-8 text-black/65">{item.desc}</p>
-              </article>
-            ))}
-          </div>
+          )}
         </div>
       </section>
+
+      {enabled && !error && posts.length > 0 ? (
+        <>
+          <EditorialPanel posts={editorialPosts} />
+
+          <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <div>
+                <div className="mb-5 flex items-center justify-between border-b border-slate-200 pb-3">
+                  <h2 className="text-right text-2xl font-black text-slate-950">أحدث المنشورات</h2>
+                  <span className="h-6 w-1 shrink-0 bg-red-700" />
+                </div>
+                <div className="grid items-start gap-5 grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+                  {posts.map((post, index) => (
+                    <PostGridCard key={`grid-${post.slug}`} post={post} index={index} />
+                  ))}
+                </div>
+              </div>
+              <CategoriesSidebar categories={categories} currentCategory={currentCategory} />
+            </div>
+          </section>
+
+          <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
+            <div className="border border-slate-200 bg-white px-4 py-6 sm:px-6">
+              <Pagination currentPage={currentPage} totalPages={totalPages} currentCategory={currentCategory} />
+            </div>
+          </section>
+
+          <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+            <ContributorsSpotlight
+              contributors={contributors}
+              title="الناشرون البارزون"
+              description="الترتيب هنا يعتمد على عدد المقالات المنشورة والمقبولة لكل مساهم."
+              limit={6}
+            />
+          </section>
+
+          <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+            <HomeTabsPanel posts={posts} featuredPosts={[featuredPost, ...headlinePosts, ...editorialPosts]} />
+          </section>
+
+          {subcategorySections.length ? (
+            <section className="mx-auto max-w-7xl px-4 pb-18 sm:px-6 lg:px-8">
+              <div className="mb-5 flex items-center justify-between border-b border-slate-200 pb-3">
+                <h2 className="text-right text-2xl font-black text-slate-950">التصنيفات الفرعية</h2>
+                <span className="h-6 w-1 shrink-0 bg-red-700" />
+              </div>
+              <div className="grid gap-6 xl:grid-cols-2">
+                {subcategorySections.map((section) => (
+                  <SubcategoryShowcaseCard key={section.title} section={section} />
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </>
+      ) : null}
     </div>
   );
 }
