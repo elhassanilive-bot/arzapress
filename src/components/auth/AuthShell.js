@@ -158,6 +158,30 @@ export default function AuthShell({ initialMode = "signin" }) {
       }
 
       if (mode === "signup") {
+        const response = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, displayName }),
+        });
+
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(payload?.message || "تعذر إنشاء الحساب.");
+        }
+
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
+
+        if (signInData?.user) {
+          await ensureProfile(supabase, signInData.user, displayName);
+        }
+
+        setMessage("تم إنشاء الحساب وتسجيل الدخول بنجاح.");
+        if (typeof window !== "undefined") window.location.href = "/account";
+        return;
+      }
+
+      if (false && mode === "signup") {
         const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/auth?mode=reset` : undefined;
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
