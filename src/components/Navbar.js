@@ -421,14 +421,13 @@ export default function Navbar() {
         </div>
       </div>
 
-      <div
-        id="mobile-nav-panel"
-        className={[
-          "md:hidden overflow-hidden border-t border-slate-200 bg-white transition-all duration-200",
-          mobileMenuOpen ? "max-h-[calc(100vh-64px)] opacity-100" : "max-h-0 opacity-0 pointer-events-none border-t-0",
-        ].join(" ")}
-      >
-        <div className="max-h-[calc(100vh-64px)] overflow-y-auto space-y-3 p-3">
+      {mobileMenuOpen ? (
+        <div
+          id="mobile-nav-panel"
+          className="md:hidden border-t border-slate-200 bg-white h-[calc(100dvh-64px)] overflow-y-auto overscroll-contain"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          <div className="space-y-3 p-3 pb-24">
           <div className="grid grid-cols-2 gap-2">
             <Link
               href="/contributors"
@@ -511,8 +510,9 @@ export default function Navbar() {
               </div>
             );
           })}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {activeMegaLink ? (
         <div
