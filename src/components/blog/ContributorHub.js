@@ -5,7 +5,7 @@ import Link from "next/link";
 import BlogImage from "@/components/blog/BlogImage";
 import ContributorsSpotlight from "@/components/blog/ContributorsSpotlight";
 import RichTextEditorField from "@/components/blog/RichTextEditorField";
-import { getChildCategoryOptions, getParentCategoryOptions, mergeCategoryTree, resolveCategorySelection } from "@/lib/blog/categories";
+import { getChildCategoryOptions, getParentCategoryOptions, mergeCategoryTree, normalizeCategoryName, resolveCategorySelection } from "@/lib/blog/categories";
 import { createSlugCandidate } from "@/lib/blog/slug";
 import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { formatArabicDate } from "@/lib/blog/render";
@@ -14,6 +14,15 @@ const EMPTY_CONTENT = "<p></p>";
 const BLOG_MEDIA_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_BLOG_BUCKET || "blog-media";
 const POSTS_PER_PAGE = 10;
 const DRAFT_STORAGE_PREFIX = "arzapress:contrib_draft:";
+const CONTRIBUTOR_PRIMARY_CATEGORIES = [
+  "الصحة واللياقة",
+  "الأخبار",
+  "المجتمع",
+  "عالم الحيوانات",
+  "البيت والأسرة",
+  "تكنولوجيا",
+  "قضايا المرأة",
+];
 
 function generatePostSlug() {
   const now = new Date();
@@ -133,7 +142,10 @@ export default function ContributorHub({ contributors = [], categoryTree = [] })
       ]),
     [categoryTree, form.category, form.categoryParent, form.newCategory, form.newCategoryParent, ownPosts]
   );
-  const parentCategoryOptions = useMemo(() => getParentCategoryOptions(availableCategoryTree), [availableCategoryTree]);
+  const parentCategoryOptions = useMemo(() => {
+    const options = getParentCategoryOptions(availableCategoryTree);
+    return CONTRIBUTOR_PRIMARY_CATEGORIES.filter((name) => options.includes(name));
+  }, [availableCategoryTree]);
   const childCategoryOptions = useMemo(
     () => getChildCategoryOptions(form.newCategoryParent || form.categoryParent, availableCategoryTree),
     [availableCategoryTree, form.categoryParent, form.newCategoryParent]
@@ -276,7 +288,7 @@ export default function ContributorHub({ contributors = [], categoryTree = [] })
   }
 
   function handleParentCategoryChange(value) {
-    const nextParent = String(value || "");
+    const nextParent = normalizeCategoryName(value);
     const childOptions = getChildCategoryOptions(nextParent, availableCategoryTree);
 
     setForm((current) => ({
@@ -289,9 +301,10 @@ export default function ContributorHub({ contributors = [], categoryTree = [] })
   }
 
   function handleChildCategoryChange(value) {
+    const nextValue = normalizeCategoryName(value);
     setForm((current) => ({
       ...current,
-      category: String(value || "").trim() || current.categoryParent,
+      category: String(nextValue || "").trim() || current.categoryParent,
       newCategory: "",
     }));
   }
@@ -316,14 +329,16 @@ export default function ContributorHub({ contributors = [], categoryTree = [] })
       if (!data) throw new Error("تعذر العثور على المقال.");
 
       setEditingPostId(data.id);
+      const normalizedParent = normalizeCategoryName(data.category_parent || data.category || "");
+      const normalizedCategory = normalizeCategoryName(data.category || data.category_parent || "");
       setForm((current) => ({
         ...current,
         slug: data.slug || current.slug,
         title: data.title || "",
         excerpt: data.excerpt || "",
         coverImageUrl: data.cover_image_url || "",
-        categoryParent: data.category_parent || "",
-        category: data.category || data.category_parent || "",
+        categoryParent: normalizedParent,
+        category: normalizedCategory,
         newCategoryParent: "",
         newCategory: "",
         tagsInput: Array.isArray(data.tags) ? data.tags.join(", ") : "",

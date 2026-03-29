@@ -6,96 +6,219 @@ import { getSupabaseClient, isSupabaseConfigured } from '@/lib/supabase/client';
 
 const sectionLinks = [
   {
-    href: '/',
-    label: 'الرئيسية',
+    href: '/?category=الصحة واللياقة',
+    label: 'الصحة واللياقة',
     active: true,
-    summary: 'أبرز الأخبار والعناوين الرئيسية والتحليلات السريعة.',
+    summary: 'موضوعات الصحة واللياقة والعناية اليومية والتغذية ونمط الحياة الصحي.',
     groups: [
-      { title: 'محتوى رئيسي', items: ['آخر الأخبار', 'الأكثر قراءة', 'اختيارات المحرر', 'التقارير الخاصة'] },
-      { title: 'تصفح سريع', items: ['العاجل', 'مقالات اليوم', 'ملفات مميزة', 'أخبار الساعة'] },
+      {
+        title: 'الصحة العامة',
+        items: [
+          'تطوير الذات',
+          'الوقاية من الأمراض',
+          'الحمل والولادة',
+          'الرضاعة الطبيعية',
+          'تقوية المناعة',
+          'القلق والتوتر',
+          'الصحة الجنسية',
+        ],
+      },
+      {
+        title: 'اللياقة والتغذية',
+        items: [
+          'تمارين منزلية',
+          'رجيمات فعالة',
+          'أخطاء في الرجيم',
+          'مكملات غذائية',
+          'الأكل الصحي اليومي',
+          'التغذية حسب العمر',
+          'التداوي بالأعشاب',
+        ],
+      },
+      {
+        title: 'العناية ونمط الحياة',
+        items: ['النوم الصحي', 'العناية بالبشرة', 'العناية بالأسنان', 'العناية بالشعر', 'الاستحمام'],
+      },
     ],
   },
   {
-    href: '/?category=أخبار',
-    label: 'أخبار',
-    summary: 'تغطيات يومية، عناوين عاجلة، وملخصات سريعة للأحداث.',
+    href: '/?category=الأخبار',
+    label: 'الأخبار',
+    summary: 'أخبار عاجلة ومستجدات يومية وتقارير وتحليلات للأحداث الأهم.',
     groups: [
-      { title: 'نشرات', items: ['أخبار عاجلة', 'آخر المستجدات', 'ملخص اليوم', 'تقارير خاصة'] },
-      { title: 'فئات', items: ['سياسة', 'اقتصاد', 'مجتمع', 'متابعات'] },
+      {
+        title: 'الأخبار العامة',
+        items: ['أخبار عاجلة', 'آخر المستجدات', 'ملخص اليوم', 'تقارير خاصة'],
+      },
+      {
+        title: 'مسارات المتابعة',
+        items: ['سياسة', 'اقتصاد', 'مجتمع', 'متابعات'],
+      },
     ],
   },
   {
-    href: '/?category=رمضانيات',
-    label: 'رمضانيات',
-    summary: 'موضوعات رمضانية متنوعة تشمل البرامج والوصفات والأجواء.',
+    href: '/?category=البيت والأسرة',
+    label: 'البيت والأسرة',
+    summary: 'محتوى البيت والأسرة وتربية الأطفال والعلاقة الزوجية وتنظيم الحياة اليومية.',
     groups: [
-      { title: 'أقسام', items: ['برامج رمضان', 'وصفات', 'أجواء الشهر', 'ليالي رمضانية'] },
-      { title: 'محتوى مميز', items: ['سحور', 'إفطار', 'نصائح', 'اختيارات اليوم'] },
+      {
+        title: 'إدارة المنزل',
+        items: [
+          'تنظيم البيت',
+          'ترتيب الغرف',
+          'أكلات سريعة',
+          'التغذية العائلية',
+          'التوازن بين العمل والبيت',
+        ],
+      },
+      {
+        title: 'الأطفال والرضع',
+        items: [
+          'سلوك الأطفال',
+          'التعليم المبكر',
+          'مشاكل أطفال وحلولها',
+          'العناية بالرضيع',
+          'الرضاعة الطبيعية',
+          'تعليم الأطفال في المنزل',
+        ],
+      },
+      {
+        title: 'الحياة الزوجية',
+        items: ['تحسين العلاقة الزوجية', 'الرومانسية في الزواج'],
+      },
     ],
   },
   {
-    href: '/?category=شرق أوسط',
-    label: 'شرق أوسط',
-    summary: 'ملفات المنطقة، المتابعات السياسية، وتطورات الميدان.',
+    href: '/?category=قضايا المرأة',
+    label: 'قضايا المرأة',
+    summary: 'محتوى يهتم بقضايا المرأة وحقوقها وصحتها وتطورها الأسري والمهني.',
     groups: [
-      { title: 'متابعات', items: ['الخليج', 'بلاد الشام', 'شمال أفريقيا', 'تقارير ميدانية'] },
-      { title: 'زاوية تحليل', items: ['ملفات خاصة', 'خلفيات', 'خرائط', 'قراءة الحدث'] },
+      {
+        title: 'الحقوق والتمكين',
+        items: ['اهتمامات المرأة', 'حقوق المرأة', 'القيادة النسائية', 'قصص نجاح نسائية', 'العمل الحر لدى النساء', 'حقوق المرأة في الإسلام'],
+      },
+      {
+        title: 'الصحة والأسرة',
+        items: [
+          'صحة الجهاز التناسلي',
+          'الحمل والولادة',
+          'الأمراض الشائعة لدى النساء',
+          'العلاقة الزوجية',
+          'تربية الأطفال',
+        ],
+      },
+      {
+        title: 'الحياة اليومية',
+        items: ['نصائح السفر للنساء', 'طرق التعامل مع هموم المنزل بانتظام'],
+      },
     ],
   },
   {
-    href: '/?category=عالم',
-    label: 'عالم',
-    summary: 'أحداث العالم، السياسة الدولية، والتقارير العابرة للحدود.',
+    href: '/?category=المجتمع',
+    label: 'المجتمع',
+    summary: 'قضايا المجتمع والاهتمامات العامة بين التاريخ والاقتصاد والسياسة والبيئة.',
     groups: [
-      { title: 'مناطق', items: ['أوروبا', 'أمريكا', 'آسيا', 'أفريقيا'] },
-      { title: 'صيغ المحتوى', items: ['عاجل', 'تحليل', 'تقارير', 'ملفات مطولة'] },
+      {
+        title: 'تصنيفات المجتمع',
+        items: ['التاريخ', 'الاستثمار', 'الرياضة', 'السفر', 'السياسة', 'الفنون', 'البيئة', 'اقتصاد'],
+      },
+    ],
+  },
+
+  {
+    href: '/?category=عالم الحيوانات',
+    label: 'عالم الحيوانات',
+    summary: 'محتوى عن تربية الحيوانات والحياة البرية والأنواع الذكية ودورها في التوازن البيئي.',
+    groups: [
+      {
+        title: 'تربية ورعاية',
+        items: ['تربية القطط', 'تربية الكلاب', 'الأسماك'],
+      },
+      {
+        title: 'أنواع وسلوك',
+        items: [
+          'الحيوانات المفترسة',
+          'طرق التواصل عند الحيوانات',
+          'الحيوانات الذكية',
+          'أغرب الحيوانات في العالم',
+          'الحشرات والطيور',
+        ],
+      },
+      {
+        title: 'الطبيعة والبيئة',
+        items: ['دور الحيوانات في التوازن البيئي', 'الحياة البرية', 'أشرس حيوانات مفترسة في العالم'],
+      },
     ],
   },
   {
-    href: '/?category=رياضة',
-    label: 'رياضة',
-    summary: 'نتائج ومتابعات ومواعيد وأخبار البطولات والأندية.',
+    href: '/?category=تكنولوجيا',
+    label: 'تكنولوجيا',
+    summary: 'أحدث أخبار التكنولوجيا والأمن الرقمي والبرمجة والأجهزة والابتكارات.',
     groups: [
-      { title: 'بطولات', items: ['كرة القدم', 'كرة السلة', 'التنس', 'رياضات قتالية'] },
-      { title: 'محتوى', items: ['نتائج', 'جدول مباريات', 'انتقالات', 'تحليلات'] },
+      {
+        title: 'تقنيات وبرمجيات',
+        items: ['الذكاء الاصطناعي', 'البرمجة وتطوير التطبيقات', 'تطوير الويب', 'الحوسبة السحابية', 'البيانات الضخمة'],
+      },
+      {
+        title: 'الأمن والبنية التحتية',
+        items: ['الأمن السيبراني', 'الشبكات والاتصالات', 'أنظمة التشغيل', 'قواعد البيانات'],
+      },
+      {
+        title: 'أجهزة واتجاهات',
+        items: ['أجهزة الكمبيوتر والإلكترونيات', 'الهواتف الذكية', 'إنترنت الأشياء', 'الواقع الافتراضي والمعزز', 'مراجعات تقنية'],
+      },
     ],
   },
   {
-    href: '/?category=الذكاء الاصطناعي',
-    label: 'الذكاء الاصطناعي',
-    summary: 'أدوات الذكاء الاصطناعي، الأخبار التقنية، والشرحات العملية.',
+    href: '/?category=تفسير الأحلام',
+    label: 'تفسير الأحلام',
+    summary: 'تفسيرات الأحلام حسب حالة الرائي ورموز الرؤى الشائعة.',
     groups: [
-      { title: 'أدوات', items: ['نماذج لغوية', 'توليد الصور', 'الأتمتة', 'مساعدات برمجية'] },
-      { title: 'محتوى', items: ['شروحات', 'مقارنات', 'اتجاهات السوق', 'أخبار الشركات'] },
+      {
+        title: 'حسب حالة الرائي',
+        items: ['تفسير أحلام العزباء', 'تفسير أحلام المتزوجة', 'تفسير أحلام الحامل', 'تفسير أحلام الرجل'],
+      },
+      {
+        title: 'حسب رموز الرؤى',
+        items: ['تفسير رؤية الحيوانات', 'تفسير رؤية الماء', 'تفسير رؤية الموتى', 'تفسير رؤية الزواج'],
+      },
     ],
   },
   {
     href: '/?category=منوعات',
     label: 'منوعات',
-    summary: 'قصص خفيفة ومحتوى متنوع وموضوعات ترند.',
+    summary: 'موضوعات متنوعة مفيدة للحياة اليومية والعمل والتطوير الشخصي.',
     groups: [
-      { title: 'أفكار', items: ['ترند', 'قصص', 'غرائب', 'حول العالم'] },
-      { title: 'اختيارات', items: ['صور اليوم', 'أشياء لافتة', 'مقتطفات', 'قراءات سريعة'] },
-    ],
-  },
-  {
-    href: '/?category=فيديو',
-    label: 'فيديو',
-    summary: 'مقاطع مختارة، لقطات سريعة، وتغطيات مرئية.',
-    groups: [
-      { title: 'أنماط', items: ['تقارير مصورة', 'مختارات', 'شروحات', 'لقطات عاجلة'] },
-      { title: 'مشاهدة', items: ['الأحدث', 'الأكثر مشاهدة', 'قصير', 'مقاطع طويلة'] },
+      {
+        title: 'تصنيفات منوعة',
+        items: [
+          'تنمية المهارات الشخصية',
+          'إدارة الوقت والإنتاجية',
+          'الثقافة المالية اليومية',
+          'الصحة النفسية والحياة المتوازنة',
+          'أفكار تعليمية للأسرة',
+          'مهارات رقمية للحياة والعمل',
+        ],
+      },
     ],
   },
 ];
 
-const MEGA_MENU_MAX_WIDTH = 704;
+const MEGA_MENU_MAX_WIDTH = 980;
 const VIEWPORT_PADDING = 16;
+
+function buildCategoryHref(value, fallbackHref) {
+  const category = String(value || '').trim();
+  if (!category) return fallbackHref;
+  return `/?category=${encodeURIComponent(category)}`;
+}
 
 export default function Navbar() {
   const [activeMega, setActiveMega] = useState(null);
   const [megaStyle, setMegaStyle] = useState({ left: VIEWPORT_PADDING, top: 110, width: MEGA_MENU_MAX_WIDTH });
   const [authUser, setAuthUser] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileExpandedSection, setMobileExpandedSection] = useState(null);
   const navRef = useRef(null);
   const triggerRefs = useRef({});
   const closeTimerRef = useRef(null);
@@ -171,6 +294,25 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    function handleResize() {
+      if (window.innerWidth >= 768) {
+        setMobileMenuOpen(false);
+      }
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
     let mounted = true;
 
     async function bindAuth() {
@@ -208,7 +350,29 @@ export default function Navbar() {
     <nav ref={navRef} className="fixed inset-x-0 top-0 z-50 border-b border-black/10 bg-white/95 backdrop-blur">
       <div className="bg-[#fbfbfb]" onMouseEnter={clearCloseTimer} onMouseLeave={scheduleMegaClose}>
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div className="overflow-x-auto">
+          <div className="flex items-center justify-between gap-3 px-3 py-3 md:hidden">
+            <Link href="/" className="text-sm font-black text-slate-900">
+              ARZAPRESS
+            </Link>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((current) => !current)}
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-800 transition hover:border-red-200 hover:text-red-700"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-nav-panel"
+            >
+              <span>{mobileMenuOpen ? 'إغلاق' : 'القائمة'}</span>
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6 6 18" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M4 12h16M4 17h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          <div className="hidden overflow-x-auto md:block">
             <div className="flex min-w-max items-center justify-between gap-4 px-3 py-3 sm:px-0">
               <div className="flex shrink-0 items-center gap-2">
                 <Link
@@ -257,6 +421,95 @@ export default function Navbar() {
         </div>
       </div>
 
+      {mobileMenuOpen ? (
+        <div id="mobile-nav-panel" className="fixed inset-x-0 top-[61px] bottom-0 z-[75] overflow-y-auto border-t border-slate-200 bg-white md:hidden">
+          <div className="space-y-3 p-3">
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/contributors"
+                onClick={() => setMobileMenuOpen(false)}
+                className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800"
+              >
+                المساهمون
+              </Link>
+              {authUser ? (
+                <Link
+                  href="/account"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800"
+                >
+                  حسابي
+                </Link>
+              ) : (
+                <Link
+                  href="/auth"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800"
+                >
+                  تسجيل الدخول
+                </Link>
+              )}
+            </div>
+
+            {sectionLinks.map((link) => {
+              const expanded = mobileExpandedSection === link.label;
+              return (
+                <div key={`mobile-${link.label}`} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                  <button
+                    type="button"
+                    onClick={() => setMobileExpandedSection(expanded ? null : link.label)}
+                    className="flex w-full items-center justify-between gap-2 px-4 py-3 text-right"
+                  >
+                    <span className="text-sm font-black text-slate-900">{link.label}</span>
+                    <svg
+                      viewBox="0 0 24 24"
+                      className={`h-4 w-4 text-slate-500 transition ${expanded ? 'rotate-90' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 6l-6 6 6 6" />
+                    </svg>
+                  </button>
+
+                  {expanded ? (
+                    <div className="border-t border-slate-200 px-3 pb-3 pt-2">
+                      <p className="mb-3 text-right text-xs leading-6 text-slate-600">{link.summary}</p>
+                      <div className="space-y-2">
+                        {link.groups.map((group) => (
+                          <div key={`mobile-${link.label}-${group.title}`} className="rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+                            <div className="mb-2 text-right text-xs font-black text-slate-900">{group.title}</div>
+                            <div className="space-y-1">
+                              {group.items.map((item) => (
+                                <Link
+                                  key={`mobile-${group.title}-${item}`}
+                                  href={buildCategoryHref(item, link.href)}
+                                  onClick={() => setMobileMenuOpen(false)}
+                                  className="block rounded-lg px-2 py-2 text-right text-sm font-semibold text-slate-700 transition hover:bg-white hover:text-red-700"
+                                >
+                                  {item}
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <Link
+                        href={link.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="mt-3 inline-flex w-full items-center justify-center rounded-xl bg-red-700 px-3 py-2 text-sm font-bold text-white transition hover:bg-red-800"
+                      >
+                        عرض القسم
+                      </Link>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
       {activeMegaLink ? (
         <div
           className="fixed z-[80] hidden md:block"
@@ -269,8 +522,8 @@ export default function Navbar() {
           onMouseEnter={() => openMega(activeMegaLink.label)}
         >
           <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_35px_90px_-35px_rgba(15,23,42,0.35)]">
-            <div className="grid grid-cols-[1.1fr_0.9fr]">
-              <div className="grid gap-4 p-5 text-right sm:grid-cols-2">
+            <div className="grid grid-cols-[1.4fr_0.6fr]">
+              <div className="grid grid-flow-col auto-cols-[minmax(190px,1fr)] gap-4 p-5 text-right">
                 {activeMegaLink.groups.map((group) => (
                   <div key={`${activeMegaLink.label}-${group.title}`} className="rounded-2xl border border-slate-200 bg-white p-4 text-right">
                     <div className="text-sm font-black text-slate-950">{group.title}</div>
@@ -278,11 +531,11 @@ export default function Navbar() {
                       {group.items.map((item) => (
                         <Link
                           key={`${group.title}-${item}`}
-                          href={activeMegaLink.href}
-                          className="flex items-center justify-between rounded-xl px-2 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-red-700"
+                          href={buildCategoryHref(item, activeMegaLink.href)}
+                          className="flex items-start justify-between gap-2 rounded-xl px-2 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-red-700"
                         >
-                          <span>{item}</span>
-                          <svg viewBox="0 0 24 24" className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2">
+                          <span className="min-w-0 flex-1 whitespace-normal break-words leading-6">{item}</span>
+                          <svg viewBox="0 0 24 24" className="mt-1 h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 6l-6 6 6 6" />
                           </svg>
                         </Link>
