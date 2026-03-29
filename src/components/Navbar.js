@@ -421,94 +421,98 @@ export default function Navbar() {
         </div>
       </div>
 
-      {mobileMenuOpen ? (
-        <div id="mobile-nav-panel" className="fixed inset-x-0 top-[61px] bottom-0 z-[75] overflow-y-auto border-t border-slate-200 bg-white md:hidden">
-          <div className="space-y-3 p-3">
-            <div className="grid grid-cols-2 gap-2">
+      <div
+        id="mobile-nav-panel"
+        className={[
+          "md:hidden overflow-hidden border-t border-slate-200 bg-white transition-all duration-200",
+          mobileMenuOpen ? "max-h-[calc(100vh-64px)] opacity-100" : "max-h-0 opacity-0 pointer-events-none border-t-0",
+        ].join(" ")}
+      >
+        <div className="max-h-[calc(100vh-64px)] overflow-y-auto space-y-3 p-3">
+          <div className="grid grid-cols-2 gap-2">
+            <Link
+              href="/contributors"
+              onClick={() => setMobileMenuOpen(false)}
+              className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800"
+            >
+              المساهمون
+            </Link>
+            {authUser ? (
               <Link
-                href="/contributors"
+                href="/account"
                 onClick={() => setMobileMenuOpen(false)}
                 className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800"
               >
-                المساهمون
+                حسابي
               </Link>
-              {authUser ? (
-                <Link
-                  href="/account"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800"
-                >
-                  حسابي
-                </Link>
-              ) : (
-                <Link
-                  href="/auth"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800"
-                >
-                  تسجيل الدخول
-                </Link>
-              )}
-            </div>
-
-            {sectionLinks.map((link) => {
-              const expanded = mobileExpandedSection === link.label;
-              return (
-                <div key={`mobile-${link.label}`} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                  <button
-                    type="button"
-                    onClick={() => setMobileExpandedSection(expanded ? null : link.label)}
-                    className="flex w-full items-center justify-between gap-2 px-4 py-3 text-right"
-                  >
-                    <span className="text-sm font-black text-slate-900">{link.label}</span>
-                    <svg
-                      viewBox="0 0 24 24"
-                      className={`h-4 w-4 text-slate-500 transition ${expanded ? 'rotate-90' : ''}`}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 6l-6 6 6 6" />
-                    </svg>
-                  </button>
-
-                  {expanded ? (
-                    <div className="border-t border-slate-200 px-3 pb-3 pt-2">
-                      <p className="mb-3 text-right text-xs leading-6 text-slate-600">{link.summary}</p>
-                      <div className="space-y-2">
-                        {link.groups.map((group) => (
-                          <div key={`mobile-${link.label}-${group.title}`} className="rounded-xl border border-slate-200 bg-slate-50 p-2.5">
-                            <div className="mb-2 text-right text-xs font-black text-slate-900">{group.title}</div>
-                            <div className="space-y-1">
-                              {group.items.map((item) => (
-                                <Link
-                                  key={`mobile-${group.title}-${item}`}
-                                  href={buildCategoryHref(item, link.href)}
-                                  onClick={() => setMobileMenuOpen(false)}
-                                  className="block rounded-lg px-2 py-2 text-right text-sm font-semibold text-slate-700 transition hover:bg-white hover:text-red-700"
-                                >
-                                  {item}
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <Link
-                        href={link.href}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="mt-3 inline-flex w-full items-center justify-center rounded-xl bg-red-700 px-3 py-2 text-sm font-bold text-white transition hover:bg-red-800"
-                      >
-                        عرض القسم
-                      </Link>
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
+            ) : (
+              <Link
+                href="/auth"
+                onClick={() => setMobileMenuOpen(false)}
+                className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800"
+              >
+                تسجيل الدخول
+              </Link>
+            )}
           </div>
+
+          {sectionLinks.map((link) => {
+            const expanded = mobileExpandedSection === link.label;
+            return (
+              <div key={`mobile-${link.label}`} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                <button
+                  type="button"
+                  onClick={() => setMobileExpandedSection(expanded ? null : link.label)}
+                  className="flex w-full items-center justify-between gap-2 px-4 py-3 text-right"
+                >
+                  <span className="text-sm font-black text-slate-900">{link.label}</span>
+                  <svg
+                    viewBox="0 0 24 24"
+                    className={`h-4 w-4 text-slate-500 transition ${expanded ? 'rotate-90' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 6l-6 6 6 6" />
+                  </svg>
+                </button>
+
+                {expanded ? (
+                  <div className="border-t border-slate-200 px-3 pb-3 pt-2">
+                    <p className="mb-3 text-right text-xs leading-6 text-slate-600">{link.summary}</p>
+                    <div className="space-y-2">
+                      {link.groups.map((group) => (
+                        <div key={`mobile-${link.label}-${group.title}`} className="rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+                          <div className="mb-2 text-right text-xs font-black text-slate-900">{group.title}</div>
+                          <div className="space-y-1">
+                            {group.items.map((item) => (
+                              <Link
+                                key={`mobile-${group.title}-${item}`}
+                                href={buildCategoryHref(item, link.href)}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="block rounded-lg px-2 py-2 text-right text-sm font-semibold text-slate-700 transition hover:bg-white hover:text-red-700"
+                              >
+                                {item}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="mt-3 inline-flex w-full items-center justify-center rounded-xl bg-red-700 px-3 py-2 text-sm font-bold text-white transition hover:bg-red-800"
+                    >
+                      عرض القسم
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
-      ) : null}
+      </div>
 
       {activeMegaLink ? (
         <div
