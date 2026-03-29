@@ -1,4 +1,4 @@
-import ContributorHub from "@/components/blog/ContributorHub";
+﻿import ContributorHub from "@/components/blog/ContributorHub";
 import { BLOG_CATEGORY_TREE } from "@/lib/blog/categories";
 import { listContributorsPublic } from "@/lib/blog/posts";
 
@@ -8,7 +8,7 @@ export const fetchCache = "force-no-store";
 
 export const metadata = {
   title: "المساهمون",
-  description: "جميع المساهمين والناشرين في أرزابريس مع إمكانية إرسال المقالات للمراجعة.",
+  description: "جميع المساهمين والناشرين في ويزازو مع إمكانية إرسال المقالات للمراجعة.",
   alternates: { canonical: "/contributors" },
 };
 

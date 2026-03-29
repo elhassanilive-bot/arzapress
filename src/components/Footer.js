@@ -1,16 +1,16 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import { site } from '@/config/site';
 
 const exploreLinks = [
   { href: '/', label: 'الرئيسية' },
   { href: '/sections', label: 'أقسام الموقع' },
-  { href: '/features', label: 'كيف يعمل أرزابريس' },
+  { href: '/features', label: 'كيف يعمل ويزازو' },
   { href: '/contributors', label: 'المساهمون' },
   { href: '/faq', label: 'مركز المساعدة' },
 ];
 
 const newsroomLinks = [
-  { href: '/about', label: 'عن أرزابريس' },
+  { href: '/about', label: 'عن ويزازو' },
   { href: '/editorial-policy', label: 'السياسة التحريرية' },
   { href: '/corrections-policy', label: 'سياسة التصحيحات' },
   { href: '/contribute', label: 'النشر كمساهم' },

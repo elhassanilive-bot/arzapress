@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import BlogImage from "@/components/blog/BlogImage";
@@ -74,7 +74,7 @@ function ContributorSpotlightCard({ contributor, compact = false }) {
               </div>
               <div className="min-w-0">
                 <div className={`truncate font-black text-slate-950 ${compact ? "text-lg" : "text-xl"}`}>{contributor.displayName}</div>
-                <div className="mt-1 text-sm text-slate-600">ناشر معتمد في أرزابريس</div>
+                <div className="mt-1 text-sm text-slate-600">ناشر معتمد في ويزازو</div>
               </div>
             </div>
 

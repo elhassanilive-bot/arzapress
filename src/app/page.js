@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import BlogImage from "@/components/blog/BlogImage";
 import ContributorsSpotlight from "@/components/blog/ContributorsSpotlight";
 import NewsTickerClient from "@/components/blog/NewsTickerClient";
@@ -12,8 +12,8 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 export const metadata = {
-  title: "أرزابريس",
-  description: "الصفحة الرئيسية لأرزابريس تعرض أحدث المقالات والتصنيفات بصيغة إخبارية احترافية.",
+  title: "ويزازو",
+  description: "الصفحة الرئيسية لويزازو تعرض أحدث المقالات والتصنيفات بصيغة إخبارية احترافية.",
   alternates: { canonical: "/" },
 };
 
@@ -845,7 +845,7 @@ export default async function HomePage({ searchParams }) {
           ) : (
             <div className="overflow-hidden border border-white/10">
               <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-white">
-                <h2 className="text-right text-xl font-black">أرزابريس</h2>
+                <h2 className="text-right text-xl font-black">ويزازو</h2>
                 <div className="mx-4 hidden min-w-0 flex-1 lg:block">
                   <NewsTickerClient />
                 </div>
