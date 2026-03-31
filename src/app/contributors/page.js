@@ -8,7 +8,7 @@ export const fetchCache = "force-no-store";
 
 export const metadata = {
   title: "المساهمون",
-  description: "جميع المساهمين والناشرين في ويزازو مع إمكانية إرسال المقالات للمراجعة.",
+  description: "جميع المساهمين والناشرين في ويكيهيس مع إمكانية إرسال المقالات للمراجعة.",
   alternates: { canonical: "/contributors" },
 };
 

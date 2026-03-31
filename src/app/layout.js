@@ -13,11 +13,11 @@ export const metadata = {
   description: site.description,
   icons: {
     icon: [
-      { url: "/icon.png", type: "image/png", sizes: "32x32" },
-      { url: "/icon.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon.png?v=20260331", type: "image/png", sizes: "32x32" },
+      { url: "/icon.png?v=20260331", type: "image/png", sizes: "192x192" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-    shortcut: ["/icon.png"],
+    apple: [{ url: "/apple-touch-icon.png?v=20260331", sizes: "180x180", type: "image/png" }],
+    shortcut: ["/icon.png?v=20260331"],
   },
   alternates: {
     canonical: "/",
